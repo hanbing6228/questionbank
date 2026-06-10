@@ -5,7 +5,9 @@
   const EXAM_MINUTES = 15;
 
   const TYPE_LABELS = { single: '单选', multi: '多选', judge: '判断' };
-  const useCFA = typeof CFA !== 'undefined' && CFA.isActive();
+  function cfaActive() {
+    return typeof CFA !== 'undefined' && CFA.isActive();
+  }
 
   const VIEW_TITLES = {
     home: '首页',
@@ -130,7 +132,7 @@
   }
 
   function startSession(mode, categoryFilter) {
-    if (useCFA) {
+    if (cfaActive()) {
       if (mode === 'wrong') {
         CFA.startWrong();
         setView('quiz');
@@ -272,8 +274,8 @@
     $('#pageTitle').textContent = VIEW_TITLES[name] || name;
     closeSidebar();
 
-    if (name === 'quiz' && useCFA) CFA.enterQuizBrowse();
-    if (name === 'mock' && useCFA) CFA.renderMockView($('#mockPanel'));
+    if (name === 'quiz' && cfaActive()) CFA.enterQuizBrowse();
+    if (name === 'mock' && cfaActive()) CFA.renderMockView($('#mockPanel'));
     if (name === 'wrong' || name === 'starred') renderLists();
     if (name === 'stats') renderStats();
     if (name === 'home') renderHome();
@@ -290,9 +292,9 @@
   }
 
   function renderHome() {
-    $('#bankTitle').textContent = useCFA ? CFA.bankTitle : QUESTION_BANK.title;
+    $('#bankTitle').textContent = cfaActive() ? CFA.bankTitle : QUESTION_BANK.title;
 
-    if (useCFA) {
+    if (cfaActive()) {
       $('#statGrid').innerHTML = CFA.renderHomeStats()
         .map(
           (s) => `
@@ -359,7 +361,7 @@
   }
 
   function updateChrome() {
-    if (useCFA) {
+    if (cfaActive()) {
       const c = CFA.getChromeCounts();
       const pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
       $('#ringFill').setAttribute('stroke-dasharray', `${pct}, 100`);
@@ -519,7 +521,7 @@
   }
 
   function renderLists() {
-    if (useCFA) {
+    if (cfaActive()) {
       renderCfaList('#wrongList', CFA.getWrongListItems(), '暂无错题，继续保持！');
       renderCfaList('#starList', CFA.getStarredListItems(), '还没有收藏题目');
       return;
@@ -569,7 +571,7 @@
   }
 
   function renderStats() {
-    if (useCFA) {
+    if (cfaActive()) {
       $('#statsPanel').innerHTML = CFA.renderStatsPanel();
       return;
     }
@@ -621,22 +623,28 @@
     toast('已重置');
   }
 
-  function bindEvents() {
-    $$('.side-link, .bnav').forEach((btn) => {
-      btn.addEventListener('click', () => setView(btn.dataset.view));
-    });
+  function on(el, event, fn) {
+    if (el) el.addEventListener(event, fn);
+  }
 
-    $('#menuBtn').addEventListener('click', openSidebar);
-    $('#sidebarClose').addEventListener('click', closeSidebar);
-    $('#sidebarBackdrop').addEventListener('click', closeSidebar);
+  function bindEvents() {
+    on($('#menuBtn'), 'click', openSidebar);
+    on($('#sidebarClose'), 'click', closeSidebar);
+    on($('#sidebarBackdrop'), 'click', closeSidebar);
 
     $$('.mode-card').forEach((card) => {
       card.addEventListener('click', () => startSession(card.dataset.mode));
     });
 
     document.body.addEventListener('click', (e) => {
+      const nav = e.target.closest('.side-link[data-view], .bnav[data-view]');
+      if (nav?.dataset.view) {
+        setView(nav.dataset.view);
+        return;
+      }
+
       const cfaSub = e.target.closest('[data-cfa-subject]');
-      if (cfaSub && useCFA) {
+      if (cfaSub && cfaActive()) {
         CFA.openSubject(cfaSub.dataset.cfaSubject);
         setView('quiz');
         return;
@@ -679,7 +687,7 @@
       }
 
       const listItem = e.target.closest('.q-list-item');
-      if (listItem?.dataset.cfaQid && useCFA) {
+      if (listItem?.dataset.cfaQid && cfaActive()) {
         const items = [...CFA.getWrongListItems(), ...CFA.getStarredListItems()];
         const row = items.find((r) => r.id === listItem.dataset.cfaQid);
         if (row?.item) {
@@ -708,24 +716,24 @@
       }
     });
 
-    $('#submitBtn').addEventListener('click', submitCurrent);
-    $('#nextBtn').addEventListener('click', () => {
+    on($('#submitBtn'), 'click', submitCurrent);
+    on($('#nextBtn'), 'click', () => {
       if (session.index < session.queue.length - 1) goIndex(session.index + 1);
       else {
         if (session.mode === 'exam') finishExam();
         else toast('已是最后一题');
       }
     });
-    $('#prevBtn').addEventListener('click', () => goIndex(session.index - 1));
-    $('#starBtn').addEventListener('click', () => {
+    on($('#prevBtn'), 'click', () => goIndex(session.index - 1));
+    on($('#starBtn'), 'click', () => {
       const q = currentQuestion();
       if (q) toggleStar(q.id);
     });
 
-    $('#retryWrongBtn').addEventListener('click', () => startSession('wrong'));
-    $('#retryStarBtn').addEventListener('click', () => startSession('starred'));
-    $('#resetBtn').addEventListener('click', resetProgress);
-    $('#shuffleBtn').addEventListener('click', () => {
+    on($('#retryWrongBtn'), 'click', () => startSession('wrong'));
+    on($('#retryStarBtn'), 'click', () => startSession('starred'));
+    on($('#resetBtn'), 'click', resetProgress);
+    on($('#shuffleBtn'), 'click', () => {
       if (session.queue.length) {
         session.queue = shuffle(session.queue);
         session.index = 0;
@@ -744,18 +752,24 @@
   }
 
   function init() {
-    if (useCFA) {
-      CFA.init({ toast, setView, $, onProgress: updateChrome });
+    try {
+      if (cfaActive()) {
+        CFA.init({ toast, setView, $, onProgress: updateChrome });
+      }
+      bindEvents();
+      renderHome();
+      renderLists();
+      updateChrome();
+    } catch (err) {
+      console.error('init failed', err);
+      toast('应用初始化失败，请刷新页面');
     }
-    bindEvents();
-    renderHome();
-    renderLists();
-    updateChrome();
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+  function boot() {
+    if (document.readyState === 'complete') init();
+    else window.addEventListener('load', init, { once: true });
   }
+
+  boot();
 })();

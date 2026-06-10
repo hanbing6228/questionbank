@@ -8,7 +8,8 @@
   const MOCK_SECONDS = 132 * 60;
 
   let hooks = { toast: () => {}, setView: () => {} };
-  let $ = () => null;
+  let $ = (sel) => document.querySelector(sel);
+  let inited = false;
 
   const state = {
     screen: 'subjects', // subjects | cases | quiz | mock-home | mock-exam
@@ -168,6 +169,14 @@
     return text ? `${q.a}. ${text}` : q.a;
   }
 
+  function exhibitSrc(file) {
+    try {
+      return new URL(`exhibits/${file}`, window.location.href).href;
+    } catch {
+      return `/exhibits/${file}`;
+    }
+  }
+
   function renderExhibits(c, q) {
     const refs = q.exhibit_refs?.length ? q.exhibit_refs : exhibitNums(q.q);
     const labels = caseExhibitLabels(c);
@@ -176,7 +185,7 @@
         .map(({ file, label }) => {
           const hi = refs.includes(label) ? ' cfa-exhibit-hi' : '';
           return `<figure class="cfa-exhibit${hi}">
-        <img src="exhibits/${esc(file)}" alt="Exhibit ${label}" loading="lazy">
+        <img src="${esc(exhibitSrc(file))}" alt="Exhibit ${label}" loading="lazy">
         <figcaption>📊 Exhibit ${label}</figcaption>
       </figure>`;
         })
@@ -856,6 +865,7 @@
   }
 
   function enterQuizBrowse() {
+    ensureBindings();
     state.screen = 'subjects';
     state.subject = null;
     const root = $('#cfaRoot');
@@ -867,17 +877,25 @@
     renderQuizPanel();
   }
 
-  function init(h) {
-    hooks = h;
-    $ = h.$ || ((sel) => document.querySelector(sel));
+  function ensureBindings() {
+    if (inited) return;
     bindQuizPanel();
     bindMockPanel();
+    inited = true;
+  }
+
+  function init(h) {
+    hooks = { ...hooks, ...h };
+    if (h?.$) $ = h.$;
+    ensureBindings();
   }
 
   function renderMockView(container) {
     if (state.mockIdx !== null) renderMockExam(container);
     else renderMockHome(container);
   }
+
+  ensureBindings();
 
   global.CFA = {
     init,
