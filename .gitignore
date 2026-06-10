@@ -7,3 +7,4 @@ ios/App/App/public/
 xcuserdata/
 .env
 .env.*
+.vercel

@@ -1,6 +1,6 @@
-# 刷题本 QuestionBank
+# CFA 刷题通关
 
-交互式刷题应用，自适应 **手机 / 平板 / 电脑**，支持 **iOS 原生壳** 与 **Vercel** 网页部署。
+基于 [CFA刷题通关_v6](https://github.com/hanbing6228/questionbank) 设计稿实现的 **CFA Level II** 交互式刷题应用，自适应 **手机 / 平板 / 电脑**，支持 **iOS 原生壳** 与 **Vercel** 网页部署。
 
 ## 在线体验
 
@@ -14,11 +14,12 @@ npx serve public
 
 ## 功能
 
-- 单选 / 多选 / 判断题
-- 顺序刷题、随机练习、错题本、收藏、模拟测验
-- 答题后即时解析
+- 10 科 CFA Level II 题库（Case + 子题结构）
+- 基础题 / 强化题分栏
+- Mock 模拟考试（限时）
+- 收藏、笔记、统计、XP 激励
 - 进度本地保存（离线可用）
-- 响应式布局：手机底部导航 · 平板图标侧栏 · 桌面完整侧栏
+- 响应式：手机单列 · 平板/桌面双栏 Case 阅读区
 
 ## 开发
 
@@ -32,16 +33,16 @@ npm run ios        # 打开 Xcode
 npm run vercel-build
 ```
 
-## 自定义题库
+## 更新 CFA 题库数据
 
-编辑 [`questions/bank.json`](./questions/bank.json) 或 [`questions/import.csv`](./questions/import.csv)，然后：
+从设计稿 HTML 重新提取（默认读取 `~/Downloads/CFA刷题通关_v6/index.html`）：
 
 ```bash
-npm run import   # 生成 web/data.js
+npm run extract-cfa
 npm run sync
 ```
 
-格式说明见 [`questions/README.md`](./questions/README.md)。
+通用 JSON/CSV 导入（备用）见 [`questions/README.md`](./questions/README.md)。
 
 ## 技术栈
 

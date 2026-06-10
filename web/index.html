@@ -5,204 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0f1419">
-  <meta name="description" content="交互式刷题，自适应手机、平板与电脑">
-  <title>刷题本</title>
+  <meta name="theme-color" content="#0d1117">
+  <title>CFA Level II · 刷题通关</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app" id="app">
-    <aside class="sidebar" id="sidebar" aria-label="导航">
-      <div class="brand">
-        <img src="icon.svg" alt="" class="brand-icon" width="36" height="36">
-        <div>
-          <div class="brand-title">刷题本</div>
-          <div class="brand-sub" id="bankTitle">题库</div>
-        </div>
-        <button class="sidebar-close" id="sidebarClose" type="button" aria-label="关闭菜单">×</button>
-      </div>
-
-      <nav class="side-nav">
-        <button class="side-link active" data-view="home" type="button">
-          <span class="ico">🏠</span><span>首页</span>
-        </button>
-        <button class="side-link" data-view="quiz" type="button">
-          <span class="ico">✏️</span><span>刷题</span>
-        </button>
-        <button class="side-link" data-view="wrong" type="button">
-          <span class="ico">📕</span><span>错题本</span>
-          <span class="badge" id="wrongBadge">0</span>
-        </button>
-        <button class="side-link" data-view="starred" type="button">
-          <span class="ico">⭐</span><span>收藏</span>
-          <span class="badge" id="starBadge">0</span>
-        </button>
-        <button class="side-link" data-view="stats" type="button">
-          <span class="ico">📊</span><span>统计</span>
-        </button>
-      </nav>
-
-      <div class="side-cats" id="sideCats"></div>
-
-      <div class="side-foot">
-        <div class="progress-ring-wrap">
-          <svg class="progress-ring" viewBox="0 0 36 36" aria-hidden="true">
-            <path class="ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-            <path class="ring-fill" id="ringFill" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-          </svg>
-          <span class="ring-label" id="ringLabel">0%</span>
-        </div>
-        <div class="side-foot-text">
-          <div class="side-foot-title">今日进度</div>
-          <div class="side-foot-sub" id="todaySummary">0 题</div>
-        </div>
-      </div>
-    </aside>
-
-    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
-
-    <main class="main">
-      <header class="topbar">
-        <button class="menu-btn" id="menuBtn" type="button" aria-label="打开菜单">☰</button>
-        <h1 class="topbar-title" id="pageTitle">首页</h1>
-        <div class="topbar-actions">
-          <button class="ghost-btn" id="shuffleBtn" type="button" title="随机模式">🔀</button>
-          <button class="ghost-btn" id="resetBtn" type="button" title="重置进度">↺</button>
-        </div>
-      </header>
-
-      <div class="content">
-        <!-- HOME -->
-        <section class="view active" id="view-home">
-          <div class="hero">
-            <p class="hero-kicker">自适应 · 手机 / 平板 / 电脑</p>
-            <h2 class="hero-title">专注刷题，进度本地保存</h2>
-            <p class="hero-desc">支持单选、多选、判断题；错题自动收录，可随时复习。</p>
-          </div>
-
-          <div class="stat-grid" id="statGrid"></div>
-
-          <h3 class="section-title">快速开始</h3>
-          <div class="mode-grid">
-            <button class="mode-card" data-mode="sequential" type="button">
-              <span class="mode-ico">📖</span>
-              <span class="mode-name">顺序刷题</span>
-              <span class="mode-desc">按题库顺序逐题练习</span>
-            </button>
-            <button class="mode-card" data-mode="random" type="button">
-              <span class="mode-ico">🎲</span>
-              <span class="mode-name">随机练习</span>
-              <span class="mode-desc">打乱顺序，巩固记忆</span>
-            </button>
-            <button class="mode-card" data-mode="wrong" type="button">
-              <span class="mode-ico">📕</span>
-              <span class="mode-name">错题重练</span>
-              <span class="mode-desc">专攻薄弱知识点</span>
-            </button>
-            <button class="mode-card" data-mode="exam" type="button">
-              <span class="mode-ico">⏱</span>
-              <span class="mode-name">模拟测验</span>
-              <span class="mode-desc">限时作答，交卷看分</span>
-            </button>
-          </div>
-
-          <h3 class="section-title">分类</h3>
-          <div class="cat-grid" id="catGrid"></div>
-        </section>
-
-        <!-- QUIZ -->
-        <section class="view" id="view-quiz">
-          <div class="quiz-layout">
-            <div class="quiz-panel" id="quizPanel">
-              <div class="quiz-empty" id="quizEmpty">
-                <p>从首页选择模式开始刷题</p>
-                <button class="primary-btn" type="button" data-goto="home">返回首页</button>
-              </div>
-
-              <article class="question-card hidden" id="questionCard">
-                <div class="q-meta">
-                  <span class="q-tag" id="qCategory">分类</span>
-                  <span class="q-type" id="qType">单选</span>
-                  <span class="q-diff" id="qDiff">★</span>
-                  <button class="star-btn" id="starBtn" type="button" aria-label="收藏">☆</button>
-                </div>
-                <div class="q-progress">
-                  <div class="q-progress-bar" id="qProgressBar"></div>
-                </div>
-                <p class="q-stem" id="qStem"></p>
-                <div class="q-options" id="qOptions"></div>
-                <div class="q-judge hidden" id="qJudge">
-                  <button class="judge-btn" data-val="true" type="button">正确</button>
-                  <button class="judge-btn" data-val="false" type="button">错误</button>
-                </div>
-                <div class="q-actions">
-                  <button class="secondary-btn" id="prevBtn" type="button">上一题</button>
-                  <button class="primary-btn" id="submitBtn" type="button">提交答案</button>
-                  <button class="primary-btn hidden" id="nextBtn" type="button">下一题</button>
-                </div>
-                <div class="q-feedback hidden" id="qFeedback">
-                  <div class="feedback-head" id="feedbackHead"></div>
-                  <p class="feedback-text" id="feedbackText"></p>
-                </div>
-              </article>
-            </div>
-
-            <aside class="quiz-aside" id="quizAside">
-              <div class="aside-block">
-                <h4>本次练习</h4>
-                <div class="aside-stat" id="sessionStat">0 / 0</div>
-              </div>
-              <div class="aside-block" id="examTimerBlock" hidden>
-                <h4>剩余时间</h4>
-                <div class="timer" id="examTimer">15:00</div>
-              </div>
-              <div class="aside-block">
-                <h4>题号</h4>
-                <div class="q-dots" id="qDots"></div>
-              </div>
-            </aside>
-          </div>
-        </section>
-
-        <!-- WRONG -->
-        <section class="view" id="view-wrong">
-          <div class="list-header">
-            <p>做错的题目会自动收录，方便反复巩固。</p>
-            <button class="primary-btn" id="retryWrongBtn" type="button">重练全部错题</button>
-          </div>
-          <ul class="q-list" id="wrongList"></ul>
-        </section>
-
-        <!-- STARRED -->
-        <section class="view" id="view-starred">
-          <div class="list-header">
-            <p>收藏的题目会保存在本机，随时复习。</p>
-            <button class="primary-btn" id="retryStarBtn" type="button">刷收藏题</button>
-          </div>
-          <ul class="q-list" id="starList"></ul>
-        </section>
-
-        <!-- STATS -->
-        <section class="view" id="view-stats">
-          <div class="stats-panel" id="statsPanel"></div>
-        </section>
-      </div>
-    </main>
-
-    <nav class="bottom-nav" id="bottomNav" aria-label="底部导航">
-      <button class="bnav active" data-view="home" type="button"><span>🏠</span><small>首页</small></button>
-      <button class="bnav" data-view="quiz" type="button"><span>✏️</span><small>刷题</small></button>
-      <button class="bnav" data-view="wrong" type="button"><span>📕</span><small>错题</small></button>
-      <button class="bnav" data-view="starred" type="button"><span>⭐</span><small>收藏</small></button>
-      <button class="bnav" data-view="stats" type="button"><span>📊</span><small>统计</small></button>
+  <header>
+    <div class="logo"><span class="ic">f</span>CFA 刷题通关</div>
+    <nav id="nav">
+      <button data-v="dash" class="on">📊 总览</button>
+      <button data-v="quiz">✏️ 题库</button>
+      <button data-v="mock">📝 Mock</button>
+      <button data-v="stats">📈 统计</button>
+      <button data-v="notes">🔖 笔记</button>
     </nav>
-  </div>
-
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-
-  <script src="data.js"></script>
+    <div class="tr"><div class="bdg">⭐ <b id="xp">0</b> XP</div></div>
+  </header>
+  <main id="app"></main>
+  <div class="toast" id="toast"></div>
+  <script src="cfa-data.js"></script>
+  <script>
+    let S = { v: 'dash', sj: null, lv: 'basic', ci: 0, qi: 0, ans: {}, fav: new Set(), notes: {}, mk: null, mkq: 0, mkans: {}, mkt: 0, mkti: null };
+  </script>
   <script src="app.js"></script>
 </body>
 </html>

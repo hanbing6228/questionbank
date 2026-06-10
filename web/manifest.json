@@ -1,7 +1,7 @@
 {
-  "name": "刷题本",
-  "short_name": "刷题本",
-  "description": "交互式刷题，自适应手机、平板与电脑",
+  "name": "CFA 刷题通关",
+  "short_name": "CFA刷题",
+  "description": "CFA Level II 交互式刷题，自适应手机、平板与电脑",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0f1419",

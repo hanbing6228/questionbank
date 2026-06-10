@@ -2,11 +2,11 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.jiuxiao.questionbank',
-  appName: '刷题本',
+  appName: 'CFA刷题通关',
   webDir: 'www',
   ios: {
     contentInset: 'automatic',
-    backgroundColor: '#0f1419',
+    backgroundColor: '#0d1117',
     scheme: 'QuestionBank',
     scrollEnabled: true,
   },
@@ -14,12 +14,12 @@ const config: CapacitorConfig = {
     SplashScreen: {
       launchAutoHide: true,
       launchShowDuration: 1400,
-      backgroundColor: '#0f1419',
+      backgroundColor: '#0d1117',
       showSpinner: false,
     },
     StatusBar: {
       style: 'DARK',
-      backgroundColor: '#0f1419',
+      backgroundColor: '#0d1117',
     },
   },
 };
