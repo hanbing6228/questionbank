@@ -13,6 +13,7 @@
     "import": "node scripts/import-questions.mjs",
     "import:cfa": "node scripts/import-cfa.mjs",
     "enrich:cfa": "node scripts/enrich-cfa-data.mjs",
+    "import:pages": "node scripts/import-pages-exhibits.mjs && node scripts/enrich-cfa-data.mjs",
     "extract-cfa": "node scripts/extract-cfa.mjs",
     "vercel-build": "node scripts/sync-www.mjs"
   },
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.0",
+    "@vercel/node": "^5.8.15",
     "pdf-parse": "^2.4.5"
   }
 }

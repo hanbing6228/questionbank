@@ -23,6 +23,9 @@
     mockPending: null,
     mockTimer: MOCK_SECONDS,
     mockTimerId: null,
+    tutorOpen: false,
+    tutorLoading: false,
+    tutorMsgs: [],
   };
 
   let progress = loadProgress();
@@ -169,6 +172,97 @@
     return text ? `${q.a}. ${text}` : q.a;
   }
 
+  function formatOptions(q) {
+    return Object.entries(q.o || {})
+      .map(([k, v]) => `${k}. ${v}`)
+      .join('\n');
+  }
+
+  function tutorApiUrl() {
+    try {
+      return new URL('/api/cfa/tutor', window.location.href).href;
+    } catch {
+      return '/api/cfa/tutor';
+    }
+  }
+
+  function renderTutorPanel(ctx) {
+    if (!ctx?.q) return '';
+    const q = ctx.q;
+    const msgs = state.tutorMsgs
+      .map((m) => {
+        const cls = m.role === 'user' ? 'cfa-tutor-user' : 'cfa-tutor-ai';
+        return `<div class="cfa-tutor-msg ${cls}">${esc(m.text)}</div>`;
+      })
+      .join('');
+
+    return `<div class="cfa-tutor">
+      <button class="cfa-tutor-toggle" type="button" data-cfa-tutor-toggle>
+        🧑‍🏫 AI 老师 ${state.tutorOpen ? '▾' : '▸'}
+      </button>
+      ${state.tutorOpen ? `<div class="cfa-tutor-body">
+        <p class="cfa-muted">结合本题背景与图表提问，老师用中文讲解思路与考点。</p>
+        <div class="cfa-tutor-msgs">${msgs || '<p class="cfa-muted">例如：「这道题考什么？」「Exhibit 1 怎么用？」</p>'}</div>
+        <div class="cfa-tutor-quick">
+          <button type="button" data-cfa-tutor-prompt="这道题主要考什么知识点？">考点</button>
+          <button type="button" data-cfa-tutor-prompt="请结合 Exhibit 讲解解题思路">图表思路</button>
+          <button type="button" data-cfa-tutor-prompt="我错在哪里？应该怎么想？">错题分析</button>
+        </div>
+        <form class="cfa-tutor-form" data-cfa-tutor-form>
+          <input type="text" name="q" placeholder="向 AI 老师提问…" ${state.tutorLoading ? 'disabled' : ''} autocomplete="off">
+          <button class="primary-btn" type="submit" ${state.tutorLoading ? 'disabled' : ''}>${state.tutorLoading ? '…' : '发送'}</button>
+        </form>
+      </div>` : ''}
+    </div>`;
+  }
+
+  async function askTutor(message, ctx) {
+    if (!message?.trim() || !ctx?.q || state.tutorLoading) return;
+    const q = ctx.q;
+    const ua = progress.ans[qKey(q)];
+    const submitted = ua !== undefined;
+
+    state.tutorMsgs.push({ role: 'user', text: message.trim() });
+    state.tutorLoading = true;
+    state.tutorOpen = true;
+    renderQuizPanel();
+
+    try {
+      const res = await fetch(tutorApiUrl(), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: message.trim(),
+          context: {
+            subject: q.s,
+            topic: q.k,
+            material: (ctx.c.m || '').slice(0, 4000),
+            question: q.q,
+            options: formatOptions(q),
+            submitted,
+            userAnswer: submitted ? answerLabel({ ...q, a: ua }) : '',
+            correctAnswer: submitted ? answerLabel(q) : '',
+            explanation: submitted ? q.e || '' : '',
+          },
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.detail || data.error || data.hint || `HTTP ${res.status}`);
+      }
+      state.tutorMsgs.push({ role: 'assistant', text: data.text || '（无回复）' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      state.tutorMsgs.push({
+        role: 'assistant',
+        text: `暂时无法连接 AI 老师：${msg}`,
+      });
+    } finally {
+      state.tutorLoading = false;
+      renderQuizPanel();
+    }
+  }
+
   function exhibitSrc(file) {
     try {
       return new URL(`exhibits/${file}`, window.location.href).href;
@@ -299,6 +393,8 @@
     state.caseIdx = caseIdx;
     state.qIdx = 0;
     state.pendingSel = null;
+    state.tutorMsgs = [];
+    state.tutorOpen = false;
     state.screen = 'quiz';
     renderQuizPanel();
   }
@@ -502,6 +598,7 @@
           <div class="cfa-opts">${opts}</div>
           ${submitRow}
           ${feedback}
+          ${renderTutorPanel(ctx)}
           <div class="cfa-qfoot">
             <span class="cfa-muted">${doneInCase}/${qs.length} 已完成</span>
             <div class="cfa-qnav">
@@ -745,72 +842,112 @@
       <div class="stats-block"><h3>Mock 记录</h3>${mockRows}</div>`;
   }
 
+  function handleQuizClick(e) {
+    const sub = e.target.closest('[data-cfa-subject]');
+    if (sub) {
+      openSubject(sub.dataset.cfaSubject);
+      return;
+    }
+    const back = e.target.closest('[data-cfa-back]');
+    if (back) {
+      const to = back.dataset.cfaBack;
+      if (to === 'subjects') {
+        state.screen = 'subjects';
+        state.subject = null;
+      } else if (to === 'cases') {
+        state.screen = 'cases';
+        state.caseIdx = -1;
+      }
+      renderQuizPanel();
+      return;
+    }
+    const lvl = e.target.closest('[data-cfa-level]');
+    if (lvl) {
+      state.level = lvl.dataset.cfaLevel;
+      renderQuizPanel();
+      return;
+    }
+    const caseBtn = e.target.closest('[data-cfa-case]');
+    if (caseBtn) {
+      openCase(Number(caseBtn.dataset.cfaCase));
+      return;
+    }
+    const qidx = e.target.closest('[data-cfa-qidx]');
+    if (qidx) {
+      state.qIdx = Number(qidx.dataset.cfaQidx);
+      state.pendingSel = null;
+      state.tutorMsgs = [];
+      renderQuizPanel();
+      return;
+    }
+    const opt = e.target.closest('[data-cfa-opt]');
+    if (opt) {
+      const ctx = getCaseContext();
+      if (!ctx?.q) return;
+      const letter = opt.dataset.cfaOpt;
+      if (progress.ans[qKey(ctx.q)] !== undefined) return;
+      state.pendingSel = letter;
+      renderQuizPanel();
+      return;
+    }
+    const submit = e.target.closest('[data-cfa-submit]');
+    if (submit) {
+      const ctx = getCaseContext();
+      if (!ctx?.q || !state.pendingSel) return;
+      if (progress.ans[qKey(ctx.q)] !== undefined) return;
+      const ok = recordAnswer(ctx.q, state.pendingSel);
+      state.pendingSel = null;
+      hooks.toast(ok ? '✓ 正确' : '✗ 查看解析');
+      renderQuizPanel();
+      return;
+    }
+    const fav = e.target.closest('[data-cfa-fav]');
+    if (fav) {
+      toggleFav(Number(fav.dataset.cfaFav));
+      renderQuizPanel();
+      return;
+    }
+    const tutorToggle = e.target.closest('[data-cfa-tutor-toggle]');
+    if (tutorToggle) {
+      state.tutorOpen = !state.tutorOpen;
+      renderQuizPanel();
+      return;
+    }
+    const tutorPrompt = e.target.closest('[data-cfa-tutor-prompt]');
+    if (tutorPrompt) {
+      const ctx = getCaseContext();
+      askTutor(tutorPrompt.dataset.cfaTutorPrompt, ctx);
+      return;
+    }
+  }
+
+  function handleQuizSubmit(e) {
+    const form = e.target.closest('[data-cfa-tutor-form]');
+    if (!form) return;
+    e.preventDefault();
+    const input = form.querySelector('input[name="q"]');
+    const ctx = getCaseContext();
+    askTutor(input?.value || '', ctx);
+    if (input) input.value = '';
+  }
+
   function bindQuizPanel() {
-    const root = $('#cfaRoot');
-    if (!root) return;
-    root.addEventListener('click', (e) => {
-      const sub = e.target.closest('[data-cfa-subject]');
-      if (sub) {
-        openSubject(sub.dataset.cfaSubject);
+    if (bindQuizPanel.bound) return;
+    bindQuizPanel.bound = true;
+
+    document.addEventListener('click', (e) => {
+      if (
+        !e.target.closest(
+          '[data-cfa-subject],[data-cfa-back],[data-cfa-level],[data-cfa-case],[data-cfa-qidx],[data-cfa-opt],[data-cfa-submit],[data-cfa-fav],[data-cfa-tutor-toggle],[data-cfa-tutor-prompt]'
+        )
+      ) {
         return;
       }
-      const back = e.target.closest('[data-cfa-back]');
-      if (back) {
-        const to = back.dataset.cfaBack;
-        if (to === 'subjects') {
-          state.screen = 'subjects';
-          state.subject = null;
-        } else if (to === 'cases') {
-          state.screen = 'cases';
-          state.caseIdx = -1;
-        }
-        renderQuizPanel();
-        return;
-      }
-      const lvl = e.target.closest('[data-cfa-level]');
-      if (lvl) {
-        state.level = lvl.dataset.cfaLevel;
-        renderQuizPanel();
-        return;
-      }
-      const caseBtn = e.target.closest('[data-cfa-case]');
-      if (caseBtn) {
-        openCase(Number(caseBtn.dataset.cfaCase));
-        return;
-      }
-      const qidx = e.target.closest('[data-cfa-qidx]');
-      if (qidx) {
-        state.qIdx = Number(qidx.dataset.cfaQidx);
-        state.pendingSel = null;
-        renderQuizPanel();
-        return;
-      }
-      const opt = e.target.closest('[data-cfa-opt]');
-      if (opt) {
-        const ctx = getCaseContext();
-        if (!ctx?.q) return;
-        const letter = opt.dataset.cfaOpt;
-        if (progress.ans[qKey(ctx.q)] !== undefined) return;
-        state.pendingSel = letter;
-        renderQuizPanel();
-        return;
-      }
-      const submit = e.target.closest('[data-cfa-submit]');
-      if (submit) {
-        const ctx = getCaseContext();
-        if (!ctx?.q || !state.pendingSel) return;
-        if (progress.ans[qKey(ctx.q)] !== undefined) return;
-        const ok = recordAnswer(ctx.q, state.pendingSel);
-        state.pendingSel = null;
-        hooks.toast(ok ? '✓ 正确' : '✗ 查看解析');
-        renderQuizPanel();
-        return;
-      }
-      const fav = e.target.closest('[data-cfa-fav]');
-      if (fav) {
-        toggleFav(Number(fav.dataset.cfaFav));
-        renderQuizPanel();
-      }
+      handleQuizClick(e);
+    });
+
+    document.addEventListener('submit', (e) => {
+      if (e.target.closest('[data-cfa-tutor-form]')) handleQuizSubmit(e);
     });
   }
 
@@ -868,6 +1005,11 @@
     ensureBindings();
     state.screen = 'subjects';
     state.subject = null;
+    state.caseIdx = -1;
+    state.qIdx = 0;
+    state.pendingSel = null;
+    state.tutorMsgs = [];
+    state.tutorOpen = false;
     const root = $('#cfaRoot');
     const empty = $('#quizEmpty');
     const card = $('#questionCard');
@@ -875,6 +1017,25 @@
     card?.classList.add('hidden');
     root?.classList.remove('hidden');
     renderQuizPanel();
+  }
+
+  function onEnterQuizView() {
+    ensureBindings();
+    const root = $('#cfaRoot');
+    const empty = $('#quizEmpty');
+    const card = $('#questionCard');
+    empty?.classList.add('hidden');
+    card?.classList.add('hidden');
+    root?.classList.remove('hidden');
+    if (state.screen === 'quiz' && state.caseIdx >= 0 && state.subject) {
+      renderQuizPanel();
+      return;
+    }
+    if (state.screen === 'cases' && state.subject) {
+      renderQuizPanel();
+      return;
+    }
+    enterQuizBrowse();
   }
 
   function ensureBindings() {
@@ -904,7 +1065,9 @@
     renderCategoryCards,
     renderSideCats,
     openSubject,
+    openCase,
     enterQuizBrowse,
+    onEnterQuizView,
     startWrong,
     startStarred,
     openFlatQuestion,

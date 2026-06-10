@@ -1230,3 +1230,92 @@ button {
   font-size: 14px;
   color: var(--text-muted);
 }
+
+.cfa-tutor {
+  margin-top: 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.cfa-tutor-toggle {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cfa-tutor-body {
+  padding: 0 14px 14px;
+  border-top: 1px solid var(--border);
+}
+
+.cfa-tutor-msgs {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.cfa-tutor-msg {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.cfa-tutor-user {
+  background: rgba(59, 130, 246, 0.12);
+  align-self: flex-end;
+  max-width: 92%;
+}
+
+.cfa-tutor-ai {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+}
+
+.cfa-tutor-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.cfa-tutor-quick button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cfa-tutor-form {
+  display: flex;
+  gap: 8px;
+}
+
+.cfa-tutor-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+}
+
+.cfa-tutor-form .primary-btn {
+  flex-shrink: 0;
+}

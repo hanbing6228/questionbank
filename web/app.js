@@ -263,6 +263,16 @@
     btn.classList.toggle('on', progress.starred.includes(qid));
   }
 
+  function showQuizView() {
+    $$('.view').forEach((v) => v.classList.remove('active'));
+    $('#view-quiz')?.classList.add('active');
+    $$('.side-link, .bnav').forEach((el) => {
+      el.classList.toggle('active', el.dataset.view === 'quiz');
+    });
+    $('#pageTitle').textContent = VIEW_TITLES.quiz;
+    closeSidebar();
+  }
+
   function setView(name) {
     $$('.view').forEach((v) => v.classList.remove('active'));
     $(`#view-${name}`)?.classList.add('active');
@@ -274,7 +284,7 @@
     $('#pageTitle').textContent = VIEW_TITLES[name] || name;
     closeSidebar();
 
-    if (name === 'quiz' && cfaActive()) CFA.enterQuizBrowse();
+    if (name === 'quiz' && cfaActive()) CFA.onEnterQuizView();
     if (name === 'mock' && cfaActive()) CFA.renderMockView($('#mockPanel'));
     if (name === 'wrong' || name === 'starred') renderLists();
     if (name === 'stats') renderStats();
@@ -650,6 +660,13 @@
         return;
       }
 
+      const cfaCase = e.target.closest('[data-cfa-case]');
+      if (cfaCase && cfaActive()) {
+        CFA.openCase(Number(cfaCase.dataset.cfaCase));
+        showQuizView();
+        return;
+      }
+
       const catBtn = e.target.closest('[data-cat]');
       if (catBtn) startSession('sequential', catBtn.dataset.cat);
 
@@ -751,25 +768,30 @@
     });
   }
 
+  let uiReady = false;
+
   function init() {
+    if (uiReady) return;
     try {
       if (cfaActive()) {
         CFA.init({ toast, setView, $, onProgress: updateChrome });
       }
-      bindEvents();
       renderHome();
       renderLists();
       updateChrome();
+      uiReady = true;
     } catch (err) {
       console.error('init failed', err);
       toast('应用初始化失败，请刷新页面');
     }
   }
 
-  function boot() {
-    if (document.readyState === 'complete') init();
-    else window.addEventListener('load', init, { once: true });
-  }
+  bindEvents();
 
-  boot();
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  window.addEventListener('load', init);
 })();
