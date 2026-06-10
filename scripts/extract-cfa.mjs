@@ -20,7 +20,8 @@ const MK = between('const MK=', 'try{const sv');
 
 const outPath = join(root, 'web', 'cfa-data.js');
 const banner = '/** Auto-extracted from CFA刷题通关_v6 — do not edit by hand */\n';
-writeFileSync(outPath, `${banner}const SM=${SM};\nconst D=${D};\nconst MK=${MK};\n`, 'utf8');
+// Use var so D/SM/MK are global across classic script tags (const/let are per-file).
+writeFileSync(outPath, `${banner}var SM=${SM};\nvar D=${D};\nvar MK=${MK};\n`, 'utf8');
 
 const sizeMb = (Buffer.byteLength(outPath) / 1024 / 1024).toFixed(2);
 console.log(`Wrote ${outPath} (${sizeMb} MB)`);
