@@ -14,7 +14,7 @@
     "import:cfa": "node scripts/import-cfa.mjs",
     "enrich:cfa": "node scripts/enrich-cfa-data.mjs",
     "extract-cfa": "node scripts/extract-cfa.mjs",
-    "vercel-build": "npm run import:cfa && node scripts/sync-www.mjs"
+    "vercel-build": "node scripts/sync-www.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.0",
