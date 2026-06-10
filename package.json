@@ -11,7 +11,9 @@
     "ios:add": "npx cap add ios",
     "assets": "npx capacitor-assets generate --ios",
     "import": "node scripts/import-questions.mjs",
-    "vercel-build": "npm run import && node scripts/sync-www.mjs"
+    "import:cfa": "node scripts/import-cfa.mjs",
+    "extract-cfa": "node scripts/extract-cfa.mjs",
+    "vercel-build": "npm run import:cfa && node scripts/sync-www.mjs"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.0",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",
-    "@capacitor/cli": "^8.4.0"
+    "@capacitor/cli": "^8.4.0",
+    "pdf-parse": "^2.4.5"
   }
 }

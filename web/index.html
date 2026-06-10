@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="theme-color" content="#0f1419">
   <meta name="description" content="交互式刷题，自适应手机、平板与电脑">
-  <title>刷题本</title>
+  <title>CFA Level II · 刷题本</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="icon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
@@ -30,6 +30,9 @@
         </button>
         <button class="side-link" data-view="quiz" type="button">
           <span class="ico">✏️</span><span>刷题</span>
+        </button>
+        <button class="side-link" data-view="mock" type="button">
+          <span class="ico">📝</span><span>Mock</span>
         </button>
         <button class="side-link" data-view="wrong" type="button">
           <span class="ico">📕</span><span>错题本</span>
@@ -79,7 +82,7 @@
           <div class="hero">
             <p class="hero-kicker">自适应 · 手机 / 平板 / 电脑</p>
             <h2 class="hero-title">专注刷题，进度本地保存</h2>
-            <p class="hero-desc">支持单选、多选、判断题；错题自动收录，可随时复习。</p>
+            <p class="hero-desc">CFA Level II 案例题 · 含图表与解析 · Mock 模拟考试</p>
           </div>
 
           <div class="stat-grid" id="statGrid"></div>
@@ -116,6 +119,7 @@
         <section class="view" id="view-quiz">
           <div class="quiz-layout">
             <div class="quiz-panel" id="quizPanel">
+              <div id="cfaRoot" class="cfa-root hidden"></div>
               <div class="quiz-empty" id="quizEmpty">
                 <p>从首页选择模式开始刷题</p>
                 <button class="primary-btn" type="button" data-goto="home">返回首页</button>
@@ -184,6 +188,11 @@
           <ul class="q-list" id="starList"></ul>
         </section>
 
+        <!-- MOCK -->
+        <section class="view" id="view-mock">
+          <div id="mockPanel"></div>
+        </section>
+
         <!-- STATS -->
         <section class="view" id="view-stats">
           <div class="stats-panel" id="statsPanel"></div>
@@ -194,6 +203,7 @@
     <nav class="bottom-nav" id="bottomNav" aria-label="底部导航">
       <button class="bnav active" data-view="home" type="button"><span>🏠</span><small>首页</small></button>
       <button class="bnav" data-view="quiz" type="button"><span>✏️</span><small>刷题</small></button>
+      <button class="bnav" data-view="mock" type="button"><span>📝</span><small>Mock</small></button>
       <button class="bnav" data-view="wrong" type="button"><span>📕</span><small>错题</small></button>
       <button class="bnav" data-view="starred" type="button"><span>⭐</span><small>收藏</small></button>
       <button class="bnav" data-view="stats" type="button"><span>📊</span><small>统计</small></button>
@@ -202,6 +212,8 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  <script src="cfa-data.js"></script>
+  <script src="cfa-app.js"></script>
   <script src="data.js"></script>
   <script src="app.js"></script>
 </body>

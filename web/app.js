@@ -5,9 +5,12 @@
   const EXAM_MINUTES = 15;
 
   const TYPE_LABELS = { single: '单选', multi: '多选', judge: '判断' };
+  const useCFA = typeof CFA !== 'undefined' && CFA.isActive();
+
   const VIEW_TITLES = {
     home: '首页',
     quiz: '刷题',
+    mock: 'Mock',
     wrong: '错题本',
     starred: '收藏',
     stats: '统计',
@@ -127,6 +130,34 @@
   }
 
   function startSession(mode, categoryFilter) {
+    if (useCFA) {
+      if (mode === 'wrong') {
+        CFA.startWrong();
+        setView('quiz');
+        return;
+      }
+      if (mode === 'starred') {
+        CFA.startStarred();
+        setView('quiz');
+        return;
+      }
+      if (mode === 'exam') {
+        setView('mock');
+        return;
+      }
+      if (categoryFilter && typeof SM !== 'undefined') {
+        const subject = Object.keys(SM).find((s) => s.replace(/\s+/g, '_') === categoryFilter);
+        if (subject) {
+          CFA.openSubject(subject);
+          setView('quiz');
+          return;
+        }
+      }
+      CFA.enterQuizBrowse();
+      setView('quiz');
+      return;
+    }
+
     session = {
       mode,
       queue: buildQueue(mode, categoryFilter),
@@ -241,6 +272,8 @@
     $('#pageTitle').textContent = VIEW_TITLES[name] || name;
     closeSidebar();
 
+    if (name === 'quiz' && useCFA) CFA.enterQuizBrowse();
+    if (name === 'mock' && useCFA) CFA.renderMockView($('#mockPanel'));
     if (name === 'wrong' || name === 'starred') renderLists();
     if (name === 'stats') renderStats();
     if (name === 'home') renderHome();
@@ -257,31 +290,45 @@
   }
 
   function renderHome() {
-    $('#bankTitle').textContent = QUESTION_BANK.title;
-    const total = QUESTION_BANK.questions.length;
-    const done = Object.keys(progress.answered).length;
-    const correct = Object.values(progress.answered).filter((a) => a.correct).length;
-    const acc = done ? Math.round((correct / done) * 100) : 0;
+    $('#bankTitle').textContent = useCFA ? CFA.bankTitle : QUESTION_BANK.title;
 
-    $('#statGrid').innerHTML = [
-      { val: total, label: '题目总数' },
-      { val: done, label: '已练习' },
-      { val: `${acc}%`, label: '正确率' },
-      { val: progress.today.count, label: '今日刷题' },
-    ]
-      .map(
-        (s) => `
+    if (useCFA) {
+      $('#statGrid').innerHTML = CFA.renderHomeStats()
+        .map(
+          (s) => `
       <div class="stat-card">
         <div class="stat-val">${s.val}</div>
         <div class="stat-label">${s.label}</div>
       </div>`
-      )
-      .join('');
+        )
+        .join('');
+      $('#catGrid').innerHTML = CFA.renderCategoryCards();
+      $('#sideCats').innerHTML = CFA.renderSideCats();
+    } else {
+      const total = QUESTION_BANK.questions.length;
+      const done = Object.keys(progress.answered).length;
+      const correct = Object.values(progress.answered).filter((a) => a.correct).length;
+      const acc = done ? Math.round((correct / done) * 100) : 0;
 
-    $('#catGrid').innerHTML = QUESTION_BANK.categories
-      .map((c) => {
-        const n = QUESTION_BANK.questions.filter((q) => q.category === c.id).length;
-        return `
+      $('#statGrid').innerHTML = [
+        { val: total, label: '题目总数' },
+        { val: done, label: '已练习' },
+        { val: `${acc}%`, label: '正确率' },
+        { val: progress.today.count, label: '今日刷题' },
+      ]
+        .map(
+          (s) => `
+      <div class="stat-card">
+        <div class="stat-val">${s.val}</div>
+        <div class="stat-label">${s.label}</div>
+      </div>`
+        )
+        .join('');
+
+      $('#catGrid').innerHTML = QUESTION_BANK.categories
+        .map((c) => {
+          const n = QUESTION_BANK.questions.filter((q) => q.category === c.id).length;
+          return `
         <button class="cat-card" type="button" data-cat="${c.id}">
           <div class="cat-card-bar" style="background:${c.color}"></div>
           <div>
@@ -289,10 +336,11 @@
             <p>${n} 题 · 点击分类练习</p>
           </div>
         </button>`;
-      })
-      .join('');
+        })
+        .join('');
+      renderSideCats();
+    }
 
-    renderSideCats();
     updateChrome();
   }
 
@@ -311,6 +359,17 @@
   }
 
   function updateChrome() {
+    if (useCFA) {
+      const c = CFA.getChromeCounts();
+      const pct = c.total ? Math.round((c.done / c.total) * 100) : 0;
+      $('#ringFill').setAttribute('stroke-dasharray', `${pct}, 100`);
+      $('#ringLabel').textContent = `${pct}%`;
+      $('#todaySummary').textContent = `${c.done} 题`;
+      $('#wrongBadge').textContent = String(c.wrong);
+      $('#starBadge').textContent = String(c.starred);
+      return;
+    }
+
     const total = QUESTION_BANK.questions.length;
     const done = Object.keys(progress.answered).length;
     const pct = total ? Math.round((done / total) * 100) : 0;
@@ -460,8 +519,30 @@
   }
 
   function renderLists() {
+    if (useCFA) {
+      renderCfaList('#wrongList', CFA.getWrongListItems(), '暂无错题，继续保持！');
+      renderCfaList('#starList', CFA.getStarredListItems(), '还没有收藏题目');
+      return;
+    }
     renderList('#wrongList', progress.wrong, '暂无错题，继续保持！');
     renderList('#starList', progress.starred, '还没有收藏题目');
+  }
+
+  function renderCfaList(sel, items, emptyMsg) {
+    const el = $(sel);
+    if (!items.length) {
+      el.innerHTML = `<li class="empty-list">${emptyMsg}</li>`;
+      return;
+    }
+    el.innerHTML = items
+      .map(
+        (row) => `
+        <li class="q-list-item" data-cfa-qid="${row.id}">
+          <div class="q-list-meta"><span>${row.category}</span><span>${row.type}</span></div>
+          <p class="q-list-stem">${row.stem}</p>
+        </li>`
+      )
+      .join('');
   }
 
   function renderList(sel, ids, emptyMsg) {
@@ -488,6 +569,11 @@
   }
 
   function renderStats() {
+    if (useCFA) {
+      $('#statsPanel').innerHTML = CFA.renderStatsPanel();
+      return;
+    }
+
     const total = QUESTION_BANK.questions.length;
     const done = Object.keys(progress.answered).length;
     const correct = Object.values(progress.answered).filter((a) => a.correct).length;
@@ -549,6 +635,13 @@
     });
 
     document.body.addEventListener('click', (e) => {
+      const cfaSub = e.target.closest('[data-cfa-subject]');
+      if (cfaSub && useCFA) {
+        CFA.openSubject(cfaSub.dataset.cfaSubject);
+        setView('quiz');
+        return;
+      }
+
       const catBtn = e.target.closest('[data-cat]');
       if (catBtn) startSession('sequential', catBtn.dataset.cat);
 
@@ -586,6 +679,16 @@
       }
 
       const listItem = e.target.closest('.q-list-item');
+      if (listItem?.dataset.cfaQid && useCFA) {
+        const items = [...CFA.getWrongListItems(), ...CFA.getStarredListItems()];
+        const row = items.find((r) => r.id === listItem.dataset.cfaQid);
+        if (row?.item) {
+          CFA.openFlatQuestion(row.item);
+          setView('quiz');
+        }
+        return;
+      }
+
       if (listItem) {
         const qid = listItem.dataset.qid;
         session = {
@@ -641,6 +744,9 @@
   }
 
   function init() {
+    if (useCFA) {
+      CFA.init({ toast, setView, $, onProgress: updateChrome });
+    }
     bindEvents();
     renderHome();
     renderLists();
