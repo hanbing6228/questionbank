@@ -16,8 +16,10 @@
     level: 'basic',
     caseIdx: -1,
     qIdx: 0,
+    pendingSel: null, // selected option before submit
     mockIdx: null,
     mockQ: 0,
+    mockPending: null,
     mockTimer: MOCK_SECONDS,
     mockTimerId: null,
   };
@@ -145,6 +147,48 @@
       .replace(/"/g, '&quot;');
   }
 
+  function exhibitNums(text) {
+    const out = new Set();
+    if (!text) return [];
+    const re = /Exhibit\s+(\d+)/gi;
+    let m;
+    while ((m = re.exec(text))) out.add(Number(m[1]));
+    return [...out].sort((a, b) => a - b);
+  }
+
+  function caseExhibitLabels(c) {
+    if (c.exhibit_labels?.length) return c.exhibit_labels;
+    const files = c.exhibit_files || [];
+    const mentioned = exhibitNums(c.m || '');
+    return files.map((file, i) => ({ file, label: mentioned[i] ?? i + 1 }));
+  }
+
+  function answerLabel(q) {
+    const text = q.o?.[q.a];
+    return text ? `${q.a}. ${text}` : q.a;
+  }
+
+  function renderExhibits(c, q) {
+    const refs = q.exhibit_refs?.length ? q.exhibit_refs : exhibitNums(q.q);
+    const labels = caseExhibitLabels(c);
+    if (labels.length) {
+      return labels
+        .map(({ file, label }) => {
+          const hi = refs.includes(label) ? ' cfa-exhibit-hi' : '';
+          return `<figure class="cfa-exhibit${hi}">
+        <img src="exhibits/${esc(file)}" alt="Exhibit ${label}" loading="lazy">
+        <figcaption>📊 Exhibit ${label}</figcaption>
+      </figure>`;
+        })
+        .join('');
+    }
+    if (c.exhibit_missing || refs.length) {
+      const list = refs.length ? refs.map((n) => `Exhibit ${n}`).join('、') : 'Exhibit';
+      return `<p class="cfa-warn">⚠️ 本题涉及 ${esc(list)}，该题组暂无对应截图，请对照原始题本查看图表。</p>`;
+    }
+    return '';
+  }
+
   function recordAnswer(q, letter) {
     const k = qKey(q);
     const ok = letter === q.a;
@@ -245,6 +289,7 @@
   function openCase(caseIdx) {
     state.caseIdx = caseIdx;
     state.qIdx = 0;
+    state.pendingSel = null;
     state.screen = 'quiz';
     renderQuizPanel();
   }
@@ -376,15 +421,10 @@
     const ua = progress.ans[key];
     const locked = ua !== undefined;
     const fav = progress.fav.has(q.i);
+    const refs = q.exhibit_refs?.length ? q.exhibit_refs : exhibitNums(q.q);
 
     let matH = fmtMaterial(c.m || '') || '<p class="cfa-muted">本题无附加背景材料</p>';
-    let exH = '';
-    (c.exhibit_files || []).forEach((f) => {
-      exH += `<figure class="cfa-exhibit">
-        <img src="exhibits/${esc(f)}" alt="Exhibit" loading="lazy">
-        <figcaption>📊 Exhibit · ${esc(f.replace('ex_p', '').replace('.jpg', ''))}</figcaption>
-      </figure>`;
-    });
+    const exH = renderExhibits(c, q);
 
     const qs = c.qs || [];
     let dots = '';
@@ -402,18 +442,28 @@
       if (locked) {
         if (letter === q.a) cls += ' correct';
         else if (letter === ua) cls += ' wrong';
-      } else if (ua === letter) cls += ' selected';
+      } else if (state.pendingSel === letter) cls += ' selected';
       opts += `<button class="${cls}" type="button" data-cfa-opt="${letter}" ${locked ? 'disabled' : ''}>
         <span class="cfa-opt-key">${letter}</span><span>${esc(text)}</span>
       </button>`;
     }
 
+    const submitRow = !locked
+      ? `<div class="cfa-submit-row">
+          <button class="primary-btn" type="button" data-cfa-submit ${state.pendingSel ? '' : 'disabled'}>提交答案</button>
+          ${state.pendingSel ? `<span class="cfa-muted">已选 ${state.pendingSel}，确认后查看解析</span>` : '<span class="cfa-muted">请先选择选项</span>'}
+        </div>`
+      : '';
+
     let feedback = '';
     if (locked) {
       const ok = ua === q.a;
+      const yourText = q.o?.[ua] ? `${ua}. ${q.o[ua]}` : ua;
       feedback = `<div class="q-feedback ${ok ? 'ok' : 'bad'}">
-        <div class="feedback-head">${ok ? '✓ 回答正确' : '✗ 回答错误'} · 正确答案 <strong>${q.a}</strong></div>
-        ${q.e ? `<p class="feedback-text">${esc(q.e)}</p>` : ''}
+        <div class="feedback-head">${ok ? '✓ 回答正确' : '✗ 回答错误'}</div>
+        <p class="cfa-answer-line"><span class="cfa-muted">你的答案</span> ${esc(yourText)}</p>
+        <p class="cfa-answer-line cfa-answer-correct"><span class="cfa-muted">正确答案</span> <strong>${esc(answerLabel(q))}</strong></p>
+        ${q.e ? `<div class="cfa-explain"><h4>解析</h4><p class="feedback-text">${esc(q.e)}</p></div>` : '<p class="cfa-muted">本题暂无文字解析</p>'}
         ${q.r ? `<p class="cfa-muted">全站正确率 ${q.r}%</p>` : ''}
       </div>`;
     }
@@ -428,19 +478,20 @@
       </div>
       <div class="cfa-split">
         <section class="cfa-vignette">
-          <div class="cfa-vignette-label">背景材料 · VIGNETTE</div>
+          <div class="cfa-vignette-label">背景材料 · VIGNETTE · Case ${state.caseIdx + 1}</div>
           <div class="cfa-material">${matH}</div>
+          ${refs.length ? `<p class="cfa-exhibit-refs">本题图表：${refs.map((n) => `Exhibit ${n}`).join('、')}</p>` : ''}
           ${exH}
-          ${c.m && c.m.includes('Exhibit') && !(c.exhibit_files || []).length ? '<p class="cfa-warn">⚠️ 材料引用 Exhibit，请对照图表作答</p>' : ''}
         </section>
         <section class="cfa-question">
           <div class="cfa-qdots">${dots}</div>
           <div class="q-meta">
             <span class="q-tag">${esc(q.k || q.s)}</span>
-            <span class="q-type">单选</span>
+            <span class="q-type">单选 · 第 ${state.qIdx + 1}/${qs.length} 题</span>
           </div>
           <p class="q-stem">${esc(q.q)}</p>
           <div class="cfa-opts">${opts}</div>
+          ${submitRow}
           ${feedback}
           <div class="cfa-qfoot">
             <span class="cfa-muted">${doneInCase}/${qs.length} 已完成</span>
@@ -483,6 +534,7 @@
   function startMock(idx) {
     state.mockIdx = idx;
     state.mockQ = 0;
+    state.mockPending = null;
     state.mockTimer = MOCK_SECONDS;
     clearInterval(state.mockTimerId);
     state.mockTimerId = setInterval(() => {
@@ -531,18 +583,27 @@
       if (locked) {
         if (letter === cur.a) cls += ' correct';
         else if (letter === ua) cls += ' wrong';
-      }
+      } else if (state.mockPending === letter) cls += ' selected';
       opts += `<button class="${cls}" type="button" data-cfa-mopt="${letter}" ${locked ? 'disabled' : ''}>
         <span class="cfa-opt-key">${letter}</span><span>${esc(text)}</span>
       </button>`;
     }
 
+    const submitRow = !locked
+      ? `<div class="cfa-submit-row">
+          <button class="primary-btn" type="button" data-cfa-msubmit ${state.mockPending ? '' : 'disabled'}>提交答案</button>
+        </div>`
+      : '';
+
     let feedback = '';
     if (locked) {
       const ok = ua === cur.a;
+      const yourText = cur.o?.[ua] ? `${ua}. ${cur.o[ua]}` : ua;
       feedback = `<div class="q-feedback ${ok ? 'ok' : 'bad'}">
-        <div class="feedback-head">${ok ? '✓ 正确' : '✗ 错误'} · 答案 ${cur.a}</div>
-        ${cur.e ? `<p class="feedback-text">${esc(cur.e)}</p>` : ''}
+        <div class="feedback-head">${ok ? '✓ 正确' : '✗ 错误'}</div>
+        <p class="cfa-answer-line"><span class="cfa-muted">你的答案</span> ${esc(yourText)}</p>
+        <p class="cfa-answer-line cfa-answer-correct"><span class="cfa-muted">正确答案</span> <strong>${esc(answerLabel(cur))}</strong></p>
+        ${cur.e ? `<div class="cfa-explain"><h4>解析</h4><p class="feedback-text">${esc(cur.e)}</p></div>` : ''}
       </div>`;
     }
 
@@ -561,10 +622,12 @@
         <section class="cfa-question">
           <p class="q-stem">${esc(cur.q)}</p>
           <div class="cfa-opts">${opts}</div>
+          ${submitRow}
           ${feedback}
           <div class="cfa-qnav">
             ${state.mockQ > 0 ? `<button class="secondary-btn" type="button" data-cfa-mq="${state.mockQ - 1}">上一题</button>` : ''}
-            ${state.mockQ < allQs.length - 1 ? `<button class="primary-btn" type="button" data-cfa-mq="${state.mockQ + 1}">下一题</button>` : `<button class="primary-btn" type="button" data-cfa-mock-finish>交卷</button>`}
+            ${locked && state.mockQ < allQs.length - 1 ? `<button class="primary-btn" type="button" data-cfa-mq="${state.mockQ + 1}">下一题</button>` : ''}
+            ${locked && state.mockQ >= allQs.length - 1 ? `<button class="primary-btn" type="button" data-cfa-mock-finish>交卷</button>` : ''}
           </div>
         </section>
       </div>
@@ -709,6 +772,7 @@
       const qidx = e.target.closest('[data-cfa-qidx]');
       if (qidx) {
         state.qIdx = Number(qidx.dataset.cfaQidx);
+        state.pendingSel = null;
         renderQuizPanel();
         return;
       }
@@ -718,7 +782,17 @@
         if (!ctx?.q) return;
         const letter = opt.dataset.cfaOpt;
         if (progress.ans[qKey(ctx.q)] !== undefined) return;
-        const ok = recordAnswer(ctx.q, letter);
+        state.pendingSel = letter;
+        renderQuizPanel();
+        return;
+      }
+      const submit = e.target.closest('[data-cfa-submit]');
+      if (submit) {
+        const ctx = getCaseContext();
+        if (!ctx?.q || !state.pendingSel) return;
+        if (progress.ans[qKey(ctx.q)] !== undefined) return;
+        const ok = recordAnswer(ctx.q, state.pendingSel);
+        state.pendingSel = null;
         hooks.toast(ok ? '✓ 正确' : '✗ 查看解析');
         renderQuizPanel();
         return;
@@ -749,20 +823,30 @@
       const mq = e.target.closest('[data-cfa-mq]');
       if (mq) {
         state.mockQ = Number(mq.dataset.cfaMq);
+        state.mockPending = null;
         renderMockExam(view);
         return;
       }
       const mopt = e.target.closest('[data-cfa-mopt]');
       if (mopt) {
+        const k = `mk${state.mockIdx}_${state.mockQ}`;
+        if (progress.mkans[k] !== undefined) return;
+        state.mockPending = mopt.dataset.cfaMopt;
+        renderMockExam(view);
+        return;
+      }
+      const msubmit = e.target.closest('[data-cfa-msubmit]');
+      if (msubmit) {
         const sess = MK[state.mockIdx];
         const allQs = [];
         sess.vignettes.forEach((v) => v.qs.forEach((q) => allQs.push(q)));
         const q = allQs[state.mockQ];
         const k = `mk${state.mockIdx}_${state.mockQ}`;
-        if (progress.mkans[k] !== undefined) return;
-        progress.mkans[k] = mopt.dataset.cfaMopt;
+        if (progress.mkans[k] !== undefined || !state.mockPending) return;
+        progress.mkans[k] = state.mockPending;
+        state.mockPending = null;
         saveProgress();
-        hooks.toast(progress.mkans[k] === q.a ? '✓ 正确' : '✗ 错误');
+        hooks.toast(progress.mkans[k] === q.a ? '✓ 正确' : '✗ 查看解析');
         renderMockExam(view);
         return;
       }

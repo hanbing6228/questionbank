@@ -1179,3 +1179,54 @@ button {
   line-height: 1.8;
   font-size: 14px;
 }
+
+.cfa-exhibit-hi {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.cfa-exhibit-refs {
+  font-size: 13px;
+  color: var(--accent);
+  margin: 0 0 10px;
+  font-weight: 600;
+}
+
+.cfa-submit-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 12px 0 8px;
+}
+
+.cfa-submit-row .primary-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cfa-answer-line {
+  margin: 6px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cfa-answer-correct strong {
+  color: var(--success);
+}
+
+.q-feedback.bad .cfa-answer-correct strong {
+  color: var(--success);
+}
+
+.cfa-explain {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.cfa-explain h4 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: var(--text-muted);
+}

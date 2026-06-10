@@ -12,6 +12,7 @@
     "assets": "npx capacitor-assets generate --ios",
     "import": "node scripts/import-questions.mjs",
     "import:cfa": "node scripts/import-cfa.mjs",
+    "enrich:cfa": "node scripts/enrich-cfa-data.mjs",
     "extract-cfa": "node scripts/extract-cfa.mjs",
     "vercel-build": "npm run import:cfa && node scripts/sync-www.mjs"
   },

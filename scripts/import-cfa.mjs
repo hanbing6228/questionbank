@@ -63,6 +63,11 @@ const extract = spawnSync('node', [join(root, 'scripts/extract-cfa.mjs'), resolv
 
 if (extract.status !== 0) process.exit(extract.status || 1);
 
+const enrich = spawnSync('node', [join(root, 'scripts/enrich-cfa-data.mjs')], {
+  stdio: 'inherit',
+});
+if (enrich.status !== 0) process.exit(enrich.status || 1);
+
 const exhibitCandidates = [
   exhibitsSrc,
   join(dirname(resolvedHtml), 'exhibits'),
