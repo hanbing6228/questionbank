@@ -1,0 +1,27 @@
+{
+  "name": "questionbank-ios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "交互式刷题 · 自适应手机/平板/电脑 — Capacitor iOS + Vercel",
+  "scripts": {
+    "sync": "node scripts/sync-www.mjs",
+    "cap:sync": "npm run sync && npx cap sync ios",
+    "ios": "npm run cap:sync && npx cap open ios",
+    "ios:run": "npm run cap:sync && npx cap run ios",
+    "ios:add": "npx cap add ios",
+    "assets": "npx capacitor-assets generate --ios",
+    "import": "node scripts/import-questions.mjs",
+    "vercel-build": "npm run import && node scripts/sync-www.mjs"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
+    "@capacitor/preferences": "^8.0.0",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.4.0"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "刷题本",
+  "short_name": "刷题本",
+  "description": "交互式刷题，自适应手机、平板与电脑",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#0f1419",
+  "theme_color": "#0f1419",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

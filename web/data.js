@@ -1,0 +1,420 @@
+/** 由 scripts/import-questions.mjs 自动生成，请勿手改 */
+/** @typedef {'single'|'multi'|'judge'} QType */
+
+const QUESTION_BANK = {
+  "id": "default",
+  "title": "计算机基础刷题库",
+  "categories": [
+    {
+      "id": "web",
+      "name": "Web 前端",
+      "color": "#3b82f6"
+    },
+    {
+      "id": "network",
+      "name": "计算机网络",
+      "color": "#8b5cf6"
+    },
+    {
+      "id": "algo",
+      "name": "数据结构与算法",
+      "color": "#10b981"
+    },
+    {
+      "id": "os",
+      "name": "操作系统",
+      "color": "#f59e0b"
+    },
+    {
+      "id": "db",
+      "name": "数据库",
+      "color": "#ec4899"
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "color": "#06b6d4"
+    }
+  ],
+  "questions": [
+    {
+      "id": "web-1",
+      "category": "web",
+      "type": "single",
+      "stem": "CSS 中，哪个属性可以让 flex 子项在主轴上平均分配剩余空间？",
+      "options": [
+        "flex-grow",
+        "flex-shrink",
+        "align-items",
+        "justify-self"
+      ],
+      "answer": 0,
+      "explanation": "flex-grow 定义放大比例，默认为 0。设为 1 时子项会按比例瓜分主轴剩余空间。",
+      "difficulty": 1
+    },
+    {
+      "id": "web-2",
+      "category": "web",
+      "type": "multi",
+      "stem": "以下哪些属于 JavaScript 的原始类型？（多选）",
+      "options": [
+        "string",
+        "array",
+        "bigint",
+        "symbol",
+        "object"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "ES 原始类型：string、number、bigint、boolean、undefined、symbol、null。array 和 object 属于对象类型。",
+      "difficulty": 2
+    },
+    {
+      "id": "web-3",
+      "category": "web",
+      "type": "judge",
+      "stem": "HTML 的 viewport meta 标签主要用于适配移动端屏幕宽度。",
+      "answer": true,
+      "explanation": "viewport 告诉浏览器按设备宽度布局，并控制初始缩放，是响应式页面的基础配置。",
+      "difficulty": 1
+    },
+    {
+      "id": "web-4",
+      "category": "web",
+      "type": "single",
+      "stem": "在媒体查询中，`(min-width: 768px)` 表示什么？",
+      "options": [
+        "仅当视口宽度恰好为 768px",
+        "视口宽度大于等于 768px 时生效",
+        "视口宽度小于 768px 时生效",
+        "仅在平板设备上生效"
+      ],
+      "answer": 1,
+      "explanation": "min-width 是下限条件：视口宽度 ≥ 768px 时规则生效，常用于平板/桌面断点。",
+      "difficulty": 1
+    },
+    {
+      "id": "web-5",
+      "category": "web",
+      "type": "single",
+      "stem": "React 中 `useEffect` 第二个参数依赖数组为空 `[]` 时，效果何时执行？",
+      "options": [
+        "每次渲染",
+        "仅挂载时一次",
+        "仅卸载时",
+        "从不执行"
+      ],
+      "answer": 1,
+      "explanation": "空依赖数组表示 effect 不依赖 props/state 变化，仅在组件首次挂载后执行一次（严格模式下开发环境可能执行两次）。",
+      "difficulty": 2
+    },
+    {
+      "id": "web-6",
+      "category": "web",
+      "type": "judge",
+      "stem": "CSS `box-sizing: border-box` 会使 width 包含 padding 和 border。",
+      "answer": true,
+      "explanation": "border-box 下元素指定宽度即为边框盒宽度，布局计算更直观，常用于响应式组件。",
+      "difficulty": 1
+    },
+    {
+      "id": "net-1",
+      "category": "network",
+      "type": "single",
+      "stem": "HTTP/1.1 默认使用的传输层协议是？",
+      "options": [
+        "UDP",
+        "TCP",
+        "ICMP",
+        "QUIC"
+      ],
+      "answer": 1,
+      "explanation": "HTTP/1.1 基于 TCP 提供可靠传输。HTTP/3 才基于 QUIC（UDP 之上）。",
+      "difficulty": 1
+    },
+    {
+      "id": "net-2",
+      "category": "network",
+      "type": "judge",
+      "stem": "DNS 解析总是发生在 TCP 三次握手完成之后。",
+      "answer": false,
+      "explanation": "通常先通过 DNS 解析得到 IP，再建立 TCP 连接。浏览器还可能并行预解析、使用缓存或 DoH。",
+      "difficulty": 2
+    },
+    {
+      "id": "net-3",
+      "category": "network",
+      "type": "single",
+      "stem": "HTTPS 在 HTTP 之下额外提供了什么保障？",
+      "options": [
+        "仅压缩",
+        "加密与身份校验",
+        "更快路由",
+        "无限并发连接"
+      ],
+      "answer": 1,
+      "explanation": "TLS 层提供机密性、完整性与（可选的）服务器身份认证，防止窃听与篡改。",
+      "difficulty": 1
+    },
+    {
+      "id": "net-4",
+      "category": "network",
+      "type": "single",
+      "stem": "TCP 三次握手的主要目的是？",
+      "options": [
+        "加密数据",
+        "同步序列号并确认双方收发能力",
+        "分配端口号",
+        "压缩报文"
+      ],
+      "answer": 1,
+      "explanation": "三次握手交换初始序列号、确认双方都能收发包，从而建立可靠的全双工连接。",
+      "difficulty": 2
+    },
+    {
+      "id": "net-5",
+      "category": "network",
+      "type": "multi",
+      "stem": "以下哪些 HTTP 状态码表示客户端错误？（多选）",
+      "options": [
+        "301",
+        "404",
+        "500",
+        "403",
+        "200"
+      ],
+      "answer": [
+        1,
+        3
+      ],
+      "explanation": "4xx 为客户端错误，如 404 Not Found、403 Forbidden。301 是重定向，500 是服务端错误。",
+      "difficulty": 1
+    },
+    {
+      "id": "algo-1",
+      "category": "algo",
+      "type": "single",
+      "stem": "二分查找的前提条件是？",
+      "options": [
+        "数据无序",
+        "数据有序",
+        "必须是链表",
+        "元素互不相同"
+      ],
+      "answer": 1,
+      "explanation": "二分依赖有序序列，通过比较中间元素每次排除一半区间，时间复杂度 O(log n)。",
+      "difficulty": 1
+    },
+    {
+      "id": "algo-2",
+      "category": "algo",
+      "type": "multi",
+      "stem": "以下哪些排序算法平均时间复杂度为 O(n log n)？（多选）",
+      "options": [
+        "快速排序",
+        "冒泡排序",
+        "归并排序",
+        "堆排序"
+      ],
+      "answer": [
+        0,
+        2,
+        3
+      ],
+      "explanation": "快排、归并、堆排序平均 O(n log n)。冒泡排序平均 O(n²)。",
+      "difficulty": 2
+    },
+    {
+      "id": "algo-3",
+      "category": "algo",
+      "type": "judge",
+      "stem": "哈希表在平均情况下查找的时间复杂度为 O(1)。",
+      "answer": true,
+      "explanation": "良好哈希函数与负载因子控制下，平均查找为常数时间；最坏情况可能退化。",
+      "difficulty": 2
+    },
+    {
+      "id": "algo-4",
+      "category": "algo",
+      "type": "single",
+      "stem": "栈（Stack）的典型特点是？",
+      "options": [
+        "先进先出",
+        "后进先出",
+        "随机访问",
+        "双向链表"
+      ],
+      "answer": 1,
+      "explanation": "栈只允许在一端插入和删除，LIFO（后进先出），常用于括号匹配、DFS、函数调用栈。",
+      "difficulty": 1
+    },
+    {
+      "id": "os-1",
+      "category": "os",
+      "type": "single",
+      "stem": "进程与线程的主要区别是？",
+      "options": [
+        "线程拥有独立地址空间",
+        "进程是调度的基本单位",
+        "线程共享进程的地址空间",
+        "进程一定比线程轻量"
+      ],
+      "answer": 2,
+      "explanation": "同一进程内多线程共享地址空间与资源；进程间相互隔离，切换成本通常更高。",
+      "difficulty": 2
+    },
+    {
+      "id": "os-2",
+      "category": "os",
+      "type": "judge",
+      "stem": "死锁的四个必要条件包括互斥、占有且等待、不可抢占和循环等待。",
+      "answer": true,
+      "explanation": "Coffman 条件：四者同时满足才可能死锁。破坏任一条件可预防死锁。",
+      "difficulty": 2
+    },
+    {
+      "id": "os-3",
+      "category": "os",
+      "type": "single",
+      "stem": "虚拟内存的主要目的是？",
+      "options": [
+        "提高 CPU 主频",
+        "让程序使用超过物理内存的地址空间",
+        "消除所有缺页中断",
+        "替代磁盘文件系统"
+      ],
+      "answer": 1,
+      "explanation": "虚拟内存通过分页/分段与换入换出，使逻辑地址空间可大于物理内存，并支持隔离与共享。",
+      "difficulty": 2
+    },
+    {
+      "id": "db-1",
+      "category": "db",
+      "type": "single",
+      "stem": "关系型数据库中，主键（Primary Key）的作用是？",
+      "options": [
+        "加速所有查询",
+        "唯一标识表中每一行",
+        "存储外键",
+        "自动加密列"
+      ],
+      "answer": 1,
+      "explanation": "主键保证实体完整性，每行有唯一标识，常作为其他表外键的引用目标。",
+      "difficulty": 1
+    },
+    {
+      "id": "db-2",
+      "category": "db",
+      "type": "judge",
+      "stem": "SQL 的 JOIN 操作只能用于两张表。",
+      "answer": false,
+      "explanation": "可以多表 JOIN，通过 ON 条件连接多个表。注意笛卡尔积与索引对性能的影响。",
+      "difficulty": 1
+    },
+    {
+      "id": "db-3",
+      "category": "db",
+      "type": "multi",
+      "stem": "以下哪些属于 ACID 特性？（多选）",
+      "options": [
+        "原子性",
+        "可用性",
+        "一致性",
+        "隔离性",
+        "持久性"
+      ],
+      "answer": [
+        0,
+        2,
+        3,
+        4
+      ],
+      "explanation": "ACID：Atomicity、Consistency、Isolation、Durability。可用性属于 CAP 中的 A。",
+      "difficulty": 2
+    },
+    {
+      "id": "python-1",
+      "category": "python",
+      "type": "single",
+      "stem": "Python 中 `list.copy()` 与 `copy.copy(list)` 对嵌套列表而言？",
+      "options": [
+        "都是深拷贝",
+        "都是浅拷贝",
+        "前者深拷贝后者浅拷贝",
+        "都会报错"
+      ],
+      "answer": 1,
+      "explanation": "二者都是浅拷贝，嵌套的可变对象仍共享引用。深拷贝需 `copy.deepcopy`。",
+      "difficulty": 2
+    },
+    {
+      "id": "python-2",
+      "category": "python",
+      "type": "judge",
+      "stem": "Python 3 中 `dict` 保持插入顺序（3.7+ 语言规范保证）。",
+      "answer": true,
+      "explanation": "自 3.7 起 dict 插入顺序成为语言特性；3.6 的 CPython 已实现但曾视为实现细节。",
+      "difficulty": 1
+    },
+    {
+      "id": "python-3",
+      "category": "python",
+      "type": "single",
+      "stem": "`with open(...) as f` 主要利用了哪种机制？",
+      "options": [
+        "装饰器",
+        "上下文管理器",
+        "生成器",
+        "元类"
+      ],
+      "answer": 1,
+      "explanation": "with 语句调用对象的 `__enter__` / `__exit__`，确保资源释放，即使发生异常。",
+      "difficulty": 1
+    },
+    {
+      "id": "csv-1",
+      "category": "web",
+      "type": "single",
+      "stem": "localStorage 的数据在关闭浏览器后是否保留？",
+      "answer": 0,
+      "explanation": "localStorage 持久化在源（origin）下，除非用户清除站点数据。",
+      "difficulty": 1,
+      "options": [
+        "会保留",
+        "不会保留",
+        "仅会话内保留",
+        "仅 iOS 保留"
+      ]
+    },
+    {
+      "id": "csv-2",
+      "category": "network",
+      "type": "judge",
+      "stem": "CDN 的主要作用是将静态资源缓存到离用户更近的节点。",
+      "answer": true,
+      "explanation": "CDN 通过边缘节点缓存与就近调度降低延迟、减轻源站压力。",
+      "difficulty": 1
+    },
+    {
+      "id": "csv-3",
+      "category": "algo",
+      "type": "multi",
+      "stem": "链表相比数组的优势包括哪些？（多选）",
+      "answer": [
+        0,
+        2
+      ],
+      "explanation": "链表在已知节点时插入删除高效且内存不要求连续；随机访问需遍历。",
+      "difficulty": 2,
+      "options": [
+        "插入删除 O(1)",
+        "随机访问 O(1)",
+        "不需连续内存",
+        "长度固定"
+      ]
+    }
+  ]
+};

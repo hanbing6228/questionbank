@@ -1,0 +1,4 @@
+id,category,type,stem,optionA,optionB,optionC,optionD,answer,explanation,difficulty
+csv-1,web,single,localStorage 的数据在关闭浏览器后是否保留？,会保留,不会保留,仅会话内保留,仅 iOS 保留,A,localStorage 持久化在源（origin）下，除非用户清除站点数据。,1
+csv-2,network,judge,CDN 的主要作用是将静态资源缓存到离用户更近的节点。,,,,,true,CDN 通过边缘节点缓存与就近调度降低延迟、减轻源站压力。,1
+csv-3,algo,multi,链表相比数组的优势包括哪些？（多选）,插入删除 O(1),随机访问 O(1),不需连续内存,长度固定,"A,C",链表在已知节点时插入删除高效且内存不要求连续；随机访问需遍历。,2
