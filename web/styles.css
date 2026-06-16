@@ -1,21 +1,21 @@
 :root {
-  --bg: #0f1419;
-  --bg-elevated: #151c26;
-  --bg-card: #1a2332;
-  --border: #2a3544;
-  --text: #e8edf4;
-  --text-muted: #94a3b8;
-  --text-dim: #64748b;
-  --accent: #3b82f6;
-  --accent-soft: rgba(59, 130, 246, 0.15);
-  --success: #10b981;
-  --success-soft: rgba(16, 185, 129, 0.15);
-  --danger: #ef4444;
-  --danger-soft: rgba(239, 68, 68, 0.15);
-  --warn: #f59e0b;
+  --bg: linear-gradient(180deg, #eff6ff 0%, #e1edff 50%, #d2e2fb 100%);
+  --bg-elevated: rgba(255, 255, 255, 0.72);
+  --bg-card: rgba(255, 255, 255, 0.62);
+  --border: rgba(88, 140, 227, 0.2);
+  --text: #15243f;
+  --text-muted: #56698a;
+  --text-dim: #8499b8;
+  --accent: #3f7ad6;
+  --accent-soft: rgba(88, 140, 227, 0.14);
+  --success: #1f9d6b;
+  --success-soft: rgba(31, 157, 107, 0.14);
+  --danger: #df5b54;
+  --danger-soft: rgba(223, 91, 84, 0.14);
+  --warn: #e09a3a;
   --radius: 14px;
   --radius-sm: 10px;
-  --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --shadow: 0 12px 34px rgba(70, 110, 190, 0.16);
   --sidebar-w: 260px;
   --topbar-h: 56px;
   --bottom-nav-h: 64px;
@@ -115,7 +115,7 @@ button {
 
 .side-link .ico { font-size: 16px; width: 22px; text-align: center; }
 
-.side-link:hover { background: rgba(255, 255, 255, 0.04); color: var(--text); }
+.side-link:hover { background: rgba(88, 140, 227, 0.1); color: var(--text); }
 
 .side-link.active {
   background: var(--accent-soft);
@@ -153,7 +153,7 @@ button {
   text-align: left;
 }
 
-.cat-chip:hover { background: rgba(255, 255, 255, 0.04); }
+.cat-chip:hover { background: rgba(88, 140, 227, 0.1); }
 
 .cat-dot {
   width: 8px;
@@ -213,7 +213,7 @@ button {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(21, 36, 63, 0.28);
   z-index: 35;
 }
 
@@ -236,7 +236,7 @@ button {
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border);
-  background: rgba(15, 20, 25, 0.92);
+  background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
@@ -811,7 +811,7 @@ button {
   bottom: 0;
   height: calc(var(--bottom-nav-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
-  background: rgba(21, 28, 38, 0.96);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
   z-index: 30;
